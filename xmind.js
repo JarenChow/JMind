@@ -1461,7 +1461,7 @@ var xmind = new janvas.Canvas({
           break;
         case "s": // save file
           this.operation.stamp();
-          this.save(); // TODO: 需要处理 Ctrl+S/O 的数据格式压缩问题，并处理掉部分功能再混淆代码
+          this.save(); // TODO: 需要处理 Ctrl+S/O 的数据格式压缩问题
           break;
         case "z":
           this.operation.prev();
