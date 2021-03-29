@@ -1,8 +1,12 @@
-<h1 style="text-align: center;">JMind</h1>
+# JMind
 
 基于 Canvas 技术，使用 [Janvas](https://github.com/jarenchow/janvas) 封装库实现的 [XMind](https://www.xmind.cn) 的主要功能。
 
-<h1 style="text-align: center;">JMind 使用手册</h1>
+[Online 演示](http://janvas.cn/JMind/index.html)
+
+[PDF 手册](http://janvas.cn/JMind/JMind%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.pdf)
+
+# JMind 使用手册
 
 |       功能       |              描述              |                     快捷键                      |
 | :--------------: | :----------------------------: | :---------------------------------------------: |
