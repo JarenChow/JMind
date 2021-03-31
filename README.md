@@ -1,6 +1,6 @@
 # JMind
 
-基于 Canvas 技术，使用 [Janvas](https://github.com/jarenchow/janvas) 封装库实现的 [XMind](https://www.xmind.cn) 的主要功能。
+基于 Canvas 技术，使用 [Janvas](https://github.com/jarenchow/janvas) 封装库实现的 [XMind](https://www.xmind.cn) 的核心功能。
 
 [Online 演示](http://janvas.cn/JMind/index.html)
 
@@ -34,7 +34,7 @@
 
 *TIPS: 多节点操作当前只支持 <kbd>Ctrl+Enter</kbd>*
 
-#### 说明
+# 说明
 
 1. 主打性能和效率，支持流畅处理数以万计的节点
     - 因为 [Janvas](https://github.com/jarenchow/janvas) 从底层绘制，仅含一个 `<canvas> dom`

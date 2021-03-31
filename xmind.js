@@ -1456,7 +1456,7 @@ var xmind = new janvas.Canvas({
           this.selector.select(this.root);
           break;
         case "o": // open file
-          if (this.operation.hasChanged() && confirm("你需要保存当前修改吗？")) this._hotkeyCtrl("s");
+          if (this.operation.hasChanged() && confirm("需要保存您所做的更改吗？")) this._hotkeyCtrl("s");
           else this.input.click();
           break;
         case "s": // save file
