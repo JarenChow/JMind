@@ -1427,7 +1427,7 @@ var xmind = new janvas.Canvas({
             if (ctrl.collapse) ctrl.collapse = false;
             ctrl.appendChild(next);
           }.bind(this));
-          break;
+          break; // TODO: 复制和粘贴操作可以考虑进入 hacker 的逻辑，使用 execCommand 方式
         case "d":
           navigator.clipboard.writeText(this.serialize(ctrl, this.format.markdown));
           if ((parent = ctrl.parent) === null) return;
@@ -1500,8 +1500,7 @@ var xmind = new janvas.Canvas({
     wheel: function (ev) {
       if (ev.ctrlKey) return;
       ev.preventDefault();
-      var delta = ev.deltaY < 0 ? 100 : -100;
-      ev.shiftKey ? this.point.add(delta, 0) : this.point.add(0, delta);
+      ev.shiftKey ? this.point.add(-ev.deltaY, 0) : this.point.add(-ev.deltaX, -ev.deltaY);
       this.draw();
     },
     // TODO: 全局 blur 时节点边框颜色修改
