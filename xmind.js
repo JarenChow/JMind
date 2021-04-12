@@ -99,10 +99,10 @@ var xmind = new janvas.Canvas({
       _ease: janvas.Utils.ease.out.quad,
       eventdown: function () {
         this._conflict.init(0, 0);
-        if (!this.$isRunning) this.beforeUpdate();
+        if (!this.$isRunning()) this.beforeUpdate();
       },
       eventmove: function (moveX, moveY) {
-        if (this.$isRunning) this._conflict.init(moveX, moveY);
+        if (this.$isRunning()) this._conflict.init(moveX, moveY);
         else this.set(this._before.x + moveX - this._conflict.x,
           this._before.y + moveY - this._conflict.y);
       },
@@ -191,18 +191,18 @@ var xmind = new janvas.Canvas({
         apply: function () { // TODO: 整体 x, y, width, height 属性取整
           var style = this.style, x = this.x, y = this.y,
             borderX = x - style.borderOffset, borderY = y - style.borderOffset;
-          this.background.initXY(x, y);
-          this.border.initXY(borderX, borderY);
+          this.background.setStart(x, y);
+          this.border.setStart(borderX, borderY);
           this.borderX = borderX - style._borderOffset;
           this.borderY = borderY - style._borderOffset;
           for (var i = 0, length = this.values.length; i < length; i++) {
-            this.texts[i].initXY(x + style.paddingLeft,
+            this.texts[i].setStart(x + style.paddingLeft,
               y + style.paddingTop + i * style.lineHeight);
           }
         },
         collidesWith: function (rect) {
           return janvas.Collision.rect(this.x, this.y, this.right, this.bottom,
-            rect._left, rect._top, rect._right, rect._bottom);
+            rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom());
         },
         draw: function () {
           this.background.fill();
@@ -290,8 +290,8 @@ var xmind = new janvas.Canvas({
           length = values.length;
           while (texts.length < length) {
             var text = new janvas.Text(this.$ctx, 0, 0);
-            text.getStyle().setFillStyle(style.color)
-              .setFont(style.font).setTextBaseline("top");
+            text.getStyle().setFillStyle(style.color).setFont(style.font)
+              .setTextAlign("left").setTextBaseline("top");
             texts.push(text);
           }
           this.background
@@ -448,10 +448,10 @@ var xmind = new janvas.Canvas({
       Node.Link.prototype = {
         apply: function () {
           var target = this.target, style = this.style, arc = this.arc;
-          this._link.initXY(target.right, target.cy);
-          arc.initXY(target.right + style.spacing, target.cy);
-          this.text.initXY(arc.getStartX(), target.cy);
-          this.line.initXY(arc.getStartX() - style.arcLineLength / 2, target.cy)
+          this._link.setStart(target.right, target.cy);
+          arc.setStart(target.right + style.spacing, target.cy);
+          this.text.setStart(arc.getStartX(), target.cy);
+          this.line.setStart(arc.getStartX() - style.arcLineLength / 2, target.cy)
             .setEndX(arc.getStartX() + style.arcLineLength / 2).setEndY(target.cy);
           if (target.length) {
             this._left = target.right;
@@ -493,7 +493,7 @@ var xmind = new janvas.Canvas({
         },
         _collidesWith: function (rect) {
           return janvas.Collision.rect(this._left, this._top, this._right, this._bottom,
-            rect._left, rect._top, rect._right, rect._bottom);
+            rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom());
         },
         _noCollision: function () {
           return false;
@@ -822,12 +822,12 @@ var xmind = new janvas.Canvas({
           if (this.height < bind.height) this.setHeight(bind.height);
           this.oninput(bind);
         },
-        initXY: function (x, y) {
+        setStart: function (x, y) {
           this.border.style.left = (this.x = x) + Hacker.unit;
           this.border.style.top = (this.y = y) + Hacker.unit;
         },
         follow: function () {
-          this.initXY(this._bind.borderX, this._bind.borderY);
+          this.setStart(this._bind.borderX, this._bind.borderY);
         },
         setWidth: function (width) {
           this.textarea.style.width = (this.width = width) + Hacker.unit;
@@ -1207,7 +1207,7 @@ var xmind = new janvas.Canvas({
       var node = this._garbage.pop();
       node ? node.reset() : node = new this.Node(this.$ctx);
       node.value = value;
-      node.collapse = collapse || false;
+      node.collapse = !!collapse;
       return node;
     },
     cursor: function (cursor) {
@@ -1230,7 +1230,7 @@ var xmind = new janvas.Canvas({
               if (this._node === this.root) this.point.eventdown();
             } else {
               this.cursor("default");
-              this.box.initXY(ev.$x, ev.$y);
+              this.box.setStart(ev.$x, ev.$y);
             }
           }
           break;
