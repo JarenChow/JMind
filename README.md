@@ -29,6 +29,7 @@
 |   **定位**节点   |      将焦点转移回到根节点      |                <kbd>Ctrl+q</kbd>                |
 |   **打开**文件   |       打开文件为思维导图       |                <kbd>Ctrl+o</kbd>                |
 |   **保存**文件   |       保存思维导图为文件       |                <kbd>Ctrl+s</kbd>                |
+|   **导出**图片   |       保存思维导图为图片       |             <kbd>Ctrl+Shift+s</kbd>             |
 
 *TIPS: <kbd>Ctrl+Delete</kbd> 可以仅删除单节点而保留子节点*
 

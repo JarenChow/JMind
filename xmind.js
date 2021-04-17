@@ -311,7 +311,7 @@ var xmind = new janvas.Canvas({
           this.layoutY += 0;
         },
         eventmove: function (x, y) {
-          return this.isMousein = this.background.isPointInPath(x, y);
+          return this.isMousein = this.background.isPointInPath$1(x, y);
         },
         select: function () {
           this.isSelected = true;
@@ -470,13 +470,15 @@ var xmind = new janvas.Canvas({
           }
         },
         draw: function () {
-          this._link.stroke();
-          if (this.target.collapse) {
-            this.arc.fillStroke();
-            this.text.fill();
-          } else if (this.target.isMousein || this.isMousein) {
-            this.arc.fillStroke();
-            this.line.stroke();
+          if (this.target.length) {
+            this._link.stroke();
+            if (this.target.collapse) {
+              this.arc.fillStroke();
+              this.text.fill();
+            } else if (this.target.isMousein || this.isMousein) {
+              this.arc.fillStroke();
+              this.line.stroke();
+            }
           }
         },
         eventdown: function () {
@@ -484,7 +486,7 @@ var xmind = new janvas.Canvas({
         },
         eventmove: function (x, y) {
           if (this.target.length === 0) return false;
-          if (this.isMousein !== (this.target.collapse ? this.arc.isPointInPath(x, y) :
+          if (this.isMousein !== (this.target.collapse ? this.arc.isPointInPath$1(x, y) :
             x >= this._left && x <= this._right && y >= this.target.y && y <= this.target.bottom)) {
             this.arc.getStyle().setFillStyle((this.isMousein = !this.isMousein) ?
               this.style.backgroundMousein : this.style.backgroundColor);
@@ -956,7 +958,8 @@ var xmind = new janvas.Canvas({
       this.point.locate(this.$width / 2, this.$height / 2);
       this.box = new janvas.Rect(this.$ctx, 0, 0, 0, 0);
       this._nextDraw = janvas.Utils.nextTick(this.draw);
-      janvas.Animate.mixin(this.point, this.$raf, 200);
+      this.$raf.bindTo(this.point, 200);
+      this.imageData = new janvas.ImageData(this.$ctx, 0, 0);
     },
     _initStyles: function () {
       this.background.getStyle().setFillStyle(this.style.backgroundColor);
@@ -1463,6 +1466,9 @@ var xmind = new janvas.Canvas({
           this.operation.stamp();
           this.save(); // TODO: 需要处理 Ctrl+S/O 的数据格式压缩问题
           break;
+        case "S":
+          this.saveAsImage(this.root);
+          break;
         case "z":
           this.operation.prev();
           break;
@@ -1572,8 +1578,36 @@ var xmind = new janvas.Canvas({
       });
       return result.substr(0, result.length - format.suffix.length);
     },
-    saveAsImage: function () {
-      // janvas.ImageData.saveAsImage(filename, type);
+    saveAsImage: function (root) {
+      var left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity, topNode;
+      this._bfs(root, function (node) {
+        if (node.x < left) left = node.x;
+        if (node.y < top) top = node.y, topNode = node;
+        if (node.right > right) right = node.right;
+        if (node.bottom > bottom) bottom = node.bottom;
+      });
+      var padding = this.style.centralSpacing,
+        offsetX = padding - root.x,
+        offsetY = padding - topNode.y,
+        dpr = this.$dpr, canvas = this.$canvas,
+        width = padding * 2 + right - left,
+        height = padding * 2 + bottom - top;
+      canvas.style.width = (width = (canvas.width = Math.round(width * dpr)) / dpr) + "px";
+      canvas.style.height = (height = (canvas.height = Math.round(height * dpr)) / dpr) + "px";
+      width = Math.round(width);
+      height = Math.round(height);
+      this._$resetTransform();
+      this._$resetStyle();
+      this.point.add(offsetX, offsetY);
+      this.background.setWidth(width).setHeight(height).fill();
+      this._bfs(root, function (node) {
+        node.link.draw();
+        node.draw();
+      });
+      this.imageData.setImageData(0, 0, width * dpr, height * dpr).saveAsImage(root.getValue(), "image/jpeg");
+      this.point.add(-offsetX, -offsetY);
+      this._$resize().resize();
+      this.draw();
     },
     load: function (file) {
       if (file) {
