@@ -87,20 +87,20 @@ var xmind = new janvas.Canvas({
         return this._delta.x || this._delta.y;
       },
       startAnimation: function () {
-        this.animation.$start();
+        this.animation.start();
       },
       stopAnimation: function () {
-        this.animation.$stop(true);
+        this.animation.stop(true);
       },
       update: function (interval) {
-        this.animation.$update(interval);
+        this.animation.update(interval);
       },
       eventdown: function () {
         this._conflict.init(0, 0);
-        if (!this.animation.$isRunning()) this.animation.beforeUpdate();
+        if (!this.animation.isRunning()) this.animation.onanimationstart();
       },
       eventmove: function (moveX, moveY) {
-        if (this.animation.$isRunning()) this._conflict.init(moveX, moveY);
+        if (this.animation.isRunning()) this._conflict.init(moveX, moveY);
         else this.set(this._before.x + moveX - this._conflict.x,
           this._before.y + moveY - this._conflict.y);
       },
@@ -958,16 +958,16 @@ var xmind = new janvas.Canvas({
       this._nextDraw = janvas.Utils.nextTick(this.draw);
       this.point.animation = new janvas.Animation(
         this.$raf, 200, 0,
-        function () { // beforeUpdate
+        function () { // onanimationstart
           this._before.copy(this._offset);
         }.bind(this.point),
-        function (ratio) { // update(ratio)
+        function (ratio) { // onanimationiteration(ratio)
           var ease = janvas.Utils.ease.out.quad;
           this.set(this._before.x + this._delta.x * ease(ratio),
             this._before.y + this._delta.y * ease(ratio));
         }.bind(this.point),
-        function () { // afterUpdate(forward)
-          this.beforeUpdate();
+        function () { // onanimationend(forward)
+          this.onanimationstart();
         }
       );
       this.imageData = new janvas.ImageData(this.$ctx, 0, 0);
