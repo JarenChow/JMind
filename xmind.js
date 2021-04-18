@@ -86,23 +86,21 @@ var xmind = new janvas.Canvas({
       isDelta: function () {
         return this._delta.x || this._delta.y;
       },
-      beforeUpdate: function () {
-        this._before.copy(this._offset);
+      startAnimation: function () {
+        this.animation.$start();
       },
-      update: function (ratio) {
-        this.set(this._before.x + this._delta.x * this._ease(ratio),
-          this._before.y + this._delta.y * this._ease(ratio));
+      stopAnimation: function () {
+        this.animation.$stop(true);
       },
-      afterUpdate: function () {
-        this.beforeUpdate();
+      update: function (interval) {
+        this.animation.$update(interval);
       },
-      _ease: janvas.Utils.ease.out.quad,
       eventdown: function () {
         this._conflict.init(0, 0);
-        if (!this.$isRunning()) this.beforeUpdate();
+        if (!this.animation.$isRunning()) this.animation.beforeUpdate();
       },
       eventmove: function (moveX, moveY) {
-        if (this.$isRunning()) this._conflict.init(moveX, moveY);
+        if (this.animation.$isRunning()) this._conflict.init(moveX, moveY);
         else this.set(this._before.x + moveX - this._conflict.x,
           this._before.y + moveY - this._conflict.y);
       },
@@ -958,7 +956,20 @@ var xmind = new janvas.Canvas({
       this.point.locate(this.$width / 2, this.$height / 2);
       this.box = new janvas.Rect(this.$ctx, 0, 0, 0, 0);
       this._nextDraw = janvas.Utils.nextTick(this.draw);
-      this.$raf.bindTo(this.point, 200);
+      this.point.animation = new janvas.Animation(
+        this.$raf, 200, 0,
+        function () { // beforeUpdate
+          this._before.copy(this._offset);
+        }.bind(this.point),
+        function (ratio) { // update(ratio)
+          var ease = janvas.Utils.ease.out.quad;
+          this.set(this._before.x + this._delta.x * ease(ratio),
+            this._before.y + this._delta.y * ease(ratio));
+        }.bind(this.point),
+        function () { // afterUpdate(forward)
+          this.beforeUpdate();
+        }
+      );
       this.imageData = new janvas.ImageData(this.$ctx, 0, 0);
     },
     _initStyles: function () {
@@ -1142,9 +1153,9 @@ var xmind = new janvas.Canvas({
         point.delta(this.$width / 2 - node.cx, this.$height / 2 - node.cy);
       }
       if (point.isDelta()) {
-        point.$start();
+        point.startAnimation();
       } else {
-        point.$stop(true);
+        point.stopAnimation();
         if (center === void (0)) this._nextDraw();
       }
     },
@@ -1152,7 +1163,7 @@ var xmind = new janvas.Canvas({
       this.background.setWidth(this.$width).setHeight(this.$height);
     },
     update: function (timestamp, interval) {
-      this.point.$update(interval);
+      this.point.update(interval);
     },
     draw: function () {
       this.background.fill();
