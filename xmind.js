@@ -97,7 +97,7 @@ var xmind = new janvas.Canvas({
       },
       eventdown: function () {
         this._conflict.init(0, 0);
-        if (!this.animation.isRunning()) this.animation.onanimationstart();
+        if (!this.animation.isRunning()) this.animation.beforeUpdate();
       },
       eventmove: function (moveX, moveY) {
         if (this.animation.isRunning()) this._conflict.init(moveX, moveY);
@@ -958,16 +958,16 @@ var xmind = new janvas.Canvas({
       this._nextDraw = janvas.Utils.nextTick(this.draw);
       this.point.animation = new janvas.Animation(
         this.$raf, 200, 0,
-        function () { // onanimationstart
+        function () { // beforeUpdate
           this._before.copy(this._offset);
         }.bind(this.point),
-        function (ratio) { // onanimationiteration(ratio)
+        function (ratio) { // onUpdate(ratio)
           var ease = janvas.Utils.ease.out.quad;
           this.set(this._before.x + this._delta.x * ease(ratio),
             this._before.y + this._delta.y * ease(ratio));
         }.bind(this.point),
-        function () { // onanimationend(forward)
-          this.onanimationstart();
+        function () { // afterUpdate(forward)
+          this.beforeUpdate();
         }
       );
       this.imageData = new janvas.ImageData(this.$ctx, 0, 0);
