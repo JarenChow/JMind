@@ -86,15 +86,6 @@ var xmind = new janvas.Canvas({
       isDelta: function () {
         return this._delta.x || this._delta.y;
       },
-      startAnimation: function () {
-        this.animation.start();
-      },
-      stopAnimation: function () {
-        this.animation.stop(true);
-      },
-      update: function (interval) {
-        this.animation.update(interval);
-      },
       eventdown: function () {
         this._conflict.init(0, 0);
         if (!this.animation.isRunning()) this.animation.beforeUpdate();
@@ -954,8 +945,6 @@ var xmind = new janvas.Canvas({
       this.operation = new this.Operation();
       this.root = this.parse(this.data);
       this.point.locate(this.$width / 2, this.$height / 2);
-      this.box = new janvas.Rect(this.$ctx, 0, 0, 0, 0);
-      this._nextDraw = janvas.Utils.nextTick(this.draw);
       this.point.animation = new janvas.Animation(
         this.$raf, 200, 0,
         function () { // beforeUpdate
@@ -968,8 +957,9 @@ var xmind = new janvas.Canvas({
         }.bind(this.point),
         function () { // afterUpdate(forward)
           this.beforeUpdate();
-        }
-      );
+        });
+      this.box = new janvas.Rect(this.$ctx, 0, 0, 0, 0);
+      this._nextDraw = janvas.Utils.nextTick(this.draw);
       this.imageData = new janvas.ImageData(this.$ctx, 0, 0);
     },
     _initStyles: function () {
@@ -1152,18 +1142,14 @@ var xmind = new janvas.Canvas({
       } else {
         point.delta(this.$width / 2 - node.cx, this.$height / 2 - node.cy);
       }
-      if (point.isDelta()) {
-        point.startAnimation();
-      } else {
-        point.stopAnimation();
-        if (center === void (0)) this._nextDraw();
-      }
+      if (point.isDelta()) point.animation.start();
+      else if (center === void (0)) this._nextDraw();
     },
     resize: function () {
       this.background.setWidth(this.$width).setHeight(this.$height);
     },
     update: function (timestamp, interval) {
-      this.point.update(interval);
+      this.point.animation.update(interval);
     },
     draw: function () {
       this.background.fill();
