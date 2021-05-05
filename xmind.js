@@ -536,8 +536,8 @@ var xmind = new janvas.Canvas({
         }
       };
 
-      function _Link(ctx, sx, sy, children, cx, cy) {
-        janvas.Shape.call(this, ctx, sx, sy, cx, cy);
+      function _Link(ctx, sx, sy, children, ox, oy) {
+        janvas.Shape.call(this, ctx, sx, sy, ox, oy);
         this.children = children;
       }
 
@@ -554,8 +554,8 @@ var xmind = new janvas.Canvas({
             if (this._collapse) return;
             for (i = 0; i < this._length; i++) {
               child = children[i];
-              ex = child.x - this.cx;
-              ey = child.cy - this.cy;
+              ex = child.x - this.ox;
+              ey = child.cy - this.oy;
               if (Math.abs(ey - ty) < this.arcToRadius) {
                 ctx.moveTo(tx, ey);
                 ctx.lineTo(ex, ey);
