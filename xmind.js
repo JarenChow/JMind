@@ -300,7 +300,7 @@ var xmind = new janvas.Canvas({
           this.layoutY += 0;
         },
         eventmove: function (x, y) {
-          return this.isMousein = this.background.isPointInPath$1(x, y);
+          return this.isMousein = this.background.isPointInPath(x, y);
         },
         select: function () {
           this.isSelected = true;
@@ -475,7 +475,7 @@ var xmind = new janvas.Canvas({
         },
         eventmove: function (x, y) {
           if (this.target.length === 0) return false;
-          if (this.isMousein !== (this.target.collapse ? this.arc.isPointInPath$1(x, y) :
+          if (this.isMousein !== (this.target.collapse ? this.arc.isPointInPath(x, y) :
             x >= this._left && x <= this._right && y >= this.target.y && y <= this.target.bottom)) {
             this.arc.getStyle().setFillStyle((this.isMousein = !this.isMousein) ?
               this.style.backgroundMousein : this.style.backgroundColor);
@@ -1130,7 +1130,7 @@ var xmind = new janvas.Canvas({
       if (this.hacker.isActivated()) this.hacker.follow();
     },
     _offsetToScreen: function (node, center) {
-      var point = this.point,
+      var point = this.point, animation = point.animation,
         spacing = node.depth ? this.style.spacing : this.style.centralSpacing;
       if (!center && node.collidesWith(this.background)) {
         point.delta(
@@ -1142,8 +1142,9 @@ var xmind = new janvas.Canvas({
       } else {
         point.delta(this.$width / 2 - node.cx, this.$height / 2 - node.cy);
       }
-      if (point.isDelta()) point.animation.start();
-      else if (center === void (0)) this._nextDraw();
+      if (point.isDelta()) animation.start(); // 一般情况下的动画启动
+      else if (animation.isRunning()) animation.beforeUpdate(), animation.stop(); // 当动画还在进行，但 delta 为 0 时的操作，锁定当前位置
+      else if (center === void (0)) this._nextDraw(); // 其他无动画时的延迟下一帧绘制
     },
     resize: function () {
       this.background.setWidth(this.$width).setHeight(this.$height);
@@ -1209,9 +1210,6 @@ var xmind = new janvas.Canvas({
       node.value = value;
       node.collapse = !!collapse;
       return node;
-    },
-    cursor: function (cursor) {
-      this.$wrapper.style.cursor = this._cursor = cursor;
     }
   },
   events: {
@@ -1229,14 +1227,14 @@ var xmind = new janvas.Canvas({
               ev.preventDefault();
               if (this._node === this.root) this.point.eventdown();
             } else {
-              this.cursor("default");
+              this.$setCursor("default");
               this.box.setStart(ev.$x, ev.$y);
             }
           }
           break;
         case this.mouse.right:
           ev.preventDefault();
-          this.cursor("grabbing");
+          this.$setCursor("grabbing");
           if (this.hacker.isActivated()) this.hacker.deactivate();
           this.point.eventdown();
           break;
@@ -1277,13 +1275,13 @@ var xmind = new janvas.Canvas({
         if (node.link.eventmove(x, y)) this._link = node.link;
       });
       if (node !== this._node || link !== this._link) {
-        this.cursor(this._node || this._link ? "pointer" : "grab");
+        this.$setCursor(this._node || this._link ? "pointer" : "grab");
         this.draw();
       }
     },
     eventup: function () {
       this.mouse.type = this.mouse.none;
-      if (this._cursor !== "pointer") this.cursor("grab");
+      if (this.$getCursor() !== "pointer") this.$setCursor("grab");
       if (this.box.getWidth() || this.box.getHeight()) {
         this.box.setWidth(0).setHeight(0);
         this.draw();
@@ -1586,25 +1584,16 @@ var xmind = new janvas.Canvas({
       var padding = this.style.centralSpacing,
         offsetX = padding - root.x,
         offsetY = padding - topNode.y,
-        dpr = this.$dpr, canvas = this.$canvas,
         width = padding * 2 + right - left,
-        height = padding * 2 + bottom - top;
-      canvas.style.width = (width = (canvas.width = Math.round(width * dpr)) / dpr) + "px";
-      canvas.style.height = (height = (canvas.height = Math.round(height * dpr)) / dpr) + "px";
-      width = Math.round(width);
-      height = Math.round(height);
-      this._$resetTransform();
-      this._$resetStyle();
+        height = padding * 2 + bottom - top,
+        dpr = this.$dpr;
       this.point.add(offsetX, offsetY);
-      this.background.setWidth(width).setHeight(height).fill();
-      this._bfs(root, function (node) {
-        node.link.draw();
-        node.draw();
-      });
+      this.box.getMatrix().setOffset(offsetX, offsetY);
+      this.$resize(width, height);
       this.imageData.setImageData(0, 0, width * dpr, height * dpr).saveAsImage(root.getValue(), "image/jpeg");
       this.point.add(-offsetX, -offsetY);
-      this._$resize().resize();
-      this.draw();
+      this.box.getMatrix().setOffset(0, 0);
+      this.$resize();
     },
     load: function (file) {
       if (file) {
