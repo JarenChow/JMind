@@ -2,9 +2,9 @@
 
 基于 Canvas 技术，使用 [Janvas](https://github.com/jarenchow/janvas) 封装库实现的 [XMind](https://www.xmind.cn) 的核心功能。
 
-[Online 演示](http://janvas.cn/JMind/index.html)
+[Online 演示](http://jarenchow.github.io/JMind/index.html)
 
-[PDF 手册](http://janvas.cn/JMind/JMind%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.pdf)
+[PDF 手册](http://jarenchow.github.io/JMind/JMind%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C.pdf)
 
 # JMind 使用手册
 
